@@ -1,0 +1,26 @@
+ru:
+  neural_responsible:
+    settings:
+      service_url: 'URL сервиса нейросети'
+      custom_field: 'Пользовательское поле'
+      select_custom_field: '-- Выберите пользовательское поле --'
+      assignment_type: 'Способ назначения'
+      use_assigned_to: 'Использовать поле "Назначена"'
+      use_custom_field: 'Использовать пользовательское поле'
+      rule_sets: 'Наборы правил'
+      rule_set: 'Набор правил'
+      add_rule_set: 'Добавить набор правил'
+      trackers: 'Трекеры'
+      status_from: 'Статус ДО'
+      status_to: 'Статус ПОСЛЕ'
+      assignee_roles: 'Роли назначаемого'
+      user_roles: 'Роли изменяющего'
+      comment_author: 'Автор комментария'
+      select_comment_author: '-- Выберите пользователя --'
+    project_settings:
+      neural_responsible_enabled: 'Включить Neural Responsible'
+    errors:
+      user_not_found: 'Пользователь не найден: %{name}'
+      neural_service_error: 'Ошибка сервиса Neural: %{error}'
+      service_url_not_configured: 'URL сервиса нейросети не настроен'
+      custom_field_required: 'Необходимо выбрать пользовательское поле при использовании этого способа назначения'

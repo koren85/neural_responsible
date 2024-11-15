@@ -1,0 +1,209 @@
+<%# app/views/settings/_neural_responsible_settings.html.erb %>
+<div class="neural-settings box">
+  <%# URL сервиса %>
+  <div class="settings-group">
+    <div class="group-label">
+      <%= l(:'neural_responsible.settings.service_url') %>
+    </div>
+    <%= text_field_tag 'settings[service_url]',
+                       settings['service_url'],
+                       placeholder: 'http://example.com:5000/predict',
+                       class: 'wide-field' %>
+  </div>
+  <div class="settings-group">
+    <div class="group-label">
+      <%= l(:'neural_responsible.settings.comment_author') %>
+    </div>
+    <%= select_tag 'settings[comment_author_id]',
+                   options_from_collection_for_select(User.active.sorted, :id, :name, settings['comment_author_id']),
+                   prompt: l(:'neural_responsible.settings.select_comment_author'),
+                   class: 'wide-field' %>
+  </div>
+  <%# Выбор способа назначения %>
+  <div class="settings-group">
+    <div class="group-label">
+      <%= l(:'neural_responsible.settings.assignment_type') %>
+    </div>
+    <div class="radio-options">
+      <label class="radio-option">
+        <%= radio_button_tag 'settings[assignment_type]', 'assigned_to',
+                             settings['assignment_type'] == 'assigned_to' || settings['assignment_type'].blank? %>
+        <%= l(:'neural_responsible.settings.use_assigned_to') %>
+      </label>
+      <label class="radio-option">
+        <%= radio_button_tag 'settings[assignment_type]', 'custom_field',
+                             settings['assignment_type'] == 'custom_field' %>
+        <%= l(:'neural_responsible.settings.use_custom_field') %>
+      </label>
+    </div>
+  </div>
+
+  <%# Выбор пользовательского поля %>
+  <div class="settings-group">
+    <div class="group-label">
+      <%= l(:'neural_responsible.settings.custom_field') %>
+    </div>
+    <%= select_tag 'settings[custom_field_id]',
+                   options_from_collection_for_select(
+                     CustomField.where(type: 'IssueCustomField', field_format: 'user'),
+                     :id,
+                     :name,
+                     settings['custom_field_id']
+                   ),
+                   prompt: l(:'neural_responsible.settings.select_custom_field'),
+                   class: 'wide-field' %>
+  </div>
+
+  <%# Наборы правил %>
+  <div class="rule-sets">
+    <h3 class="rule-sets-title"><%= l(:'neural_responsible.settings.rule_sets') %></h3>
+
+    <%# Шаблон для новых наборов правил %>
+    <fieldset id="rule-set-template" class="rule-set" style="display:none;">
+      <div class="group-label">
+        <%= "#{l(:'neural_responsible.settings.rule_set')} INDEX" %>
+      </div>
+
+      <div class="rule-set-content">
+        <p>
+        <div class="group-label">
+          <%= l(:'neural_responsible.settings.trackers') %>
+        </div>
+        <%= select_tag "settings[rule_sets][INDEX][trackers][]",
+                       options_from_collection_for_select(Tracker.all, :id, :name),
+                       multiple: true,
+                       size: 8 %>
+        </p>
+
+        <p>
+        <div class="group-label">
+          <%= l(:'neural_responsible.settings.status_from') %>
+        </div>
+        <%= select_tag "settings[rule_sets][INDEX][status_from][]",
+                       options_from_collection_for_select(IssueStatus.all, :id, :name),
+                       multiple: true,
+                       size: 8 %>
+        </p>
+
+        <p>
+        <div class="group-label">
+          <%= l(:'neural_responsible.settings.status_to') %>
+        </div>
+        <%= select_tag "settings[rule_sets][INDEX][status_to][]",
+                       options_from_collection_for_select(IssueStatus.all, :id, :name),
+                       multiple: true,
+                       size: 8 %>
+        </p>
+
+        <p>
+        <div class="group-label">
+          <%= l(:'neural_responsible.settings.assignee_roles') %>
+        </div>
+        <%= select_tag "settings[rule_sets][INDEX][assignee_roles][]",
+                       options_from_collection_for_select(Role.all, :id, :name),
+                       multiple: true,
+                       size: 8 %>
+        </p>
+
+        <p>
+        <div class="group-label">
+          <%= l(:'neural_responsible.settings.user_roles') %>
+        </div>
+        <%= select_tag "settings[rule_sets][INDEX][user_roles][]",
+                       options_from_collection_for_select(Role.all, :id, :name),
+                       multiple: true,
+                       size: 8 %>
+        </p>
+
+        <%= link_to l(:button_delete), '#',
+                    class: 'icon icon-del delete-rule-set',
+                    title: l(:button_delete) %>
+      </div>
+    </fieldset>
+
+    <%# Существующие наборы правил %>
+    <%
+        rule_sets = settings['rule_sets'] || {}
+        rule_sets = rule_sets.is_a?(Hash) ? rule_sets : {}
+        rule_sets_array = rule_sets.keys.sort.map { |key| rule_sets[key] }
+    %>
+
+    <% rule_sets_array.each_with_index do |rule_set, index| %>
+      <% rule_set = {} unless rule_set.is_a?(Hash) %>
+      <fieldset class="rule-set">
+        <div class="group-label">
+          <%= "#{l(:'neural_responsible.settings.rule_set')} #{index + 1}" %>
+        </div>
+
+        <div class="rule-set-content">
+          <p>
+          <div class="group-label">
+            <%= l(:'neural_responsible.settings.trackers') %>
+          </div>
+          <%= select_tag "settings[rule_sets][#{index}][trackers][]",
+                         options_from_collection_for_select(Tracker.all, :id, :name, Array(rule_set['trackers']).map(&:to_i)),
+                         multiple: true,
+                         size: 8 %>
+          </p>
+
+          <p>
+          <div class="group-label">
+            <%= l(:'neural_responsible.settings.status_from') %>
+          </div>
+          <%= select_tag "settings[rule_sets][#{index}][status_from][]",
+                         options_from_collection_for_select(IssueStatus.all, :id, :name, Array(rule_set['status_from']).map(&:to_i)),
+                         multiple: true,
+                         size: 8 %>
+          </p>
+
+          <p>
+          <div class="group-label">
+            <%= l(:'neural_responsible.settings.status_to') %>
+          </div>
+          <%= select_tag "settings[rule_sets][#{index}][status_to][]",
+                         options_from_collection_for_select(IssueStatus.all, :id, :name, Array(rule_set['status_to']).map(&:to_i)),
+                         multiple: true,
+                         size: 8 %>
+          </p>
+
+          <p>
+          <div class="group-label">
+            <%= l(:'neural_responsible.settings.assignee_roles') %>
+          </div>
+          <%= select_tag "settings[rule_sets][#{index}][assignee_roles][]",
+                         options_from_collection_for_select(Role.all, :id, :name, Array(rule_set['assignee_roles']).map(&:to_i)),
+                         multiple: true,
+                         size: 8 %>
+          </p>
+
+          <p>
+          <div class="group-label">
+            <%= l(:'neural_responsible.settings.user_roles') %>
+          </div>
+          <%= select_tag "settings[rule_sets][#{index}][user_roles][]",
+                         options_from_collection_for_select(Role.all, :id, :name, Array(rule_set['user_roles']).map(&:to_i)),
+                         multiple: true,
+                         size: 8 %>
+          </p>
+
+          <%= link_to l(:button_delete), '#',
+                      class: 'icon icon-del delete-rule-set',
+                      title: l(:button_delete) %>
+        </div>
+      </fieldset>
+    <% end %>
+  </div>
+
+  <%# Кнопка добавления набора правил %>
+  <p>
+    <%= link_to l(:'neural_responsible.settings.add_rule_set'),
+                '#',
+                class: 'icon icon-add add-rule-set',
+                title: l(:'neural_responsible.settings.add_rule_set') %>
+  </p>
+</div>
+
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'neural_responsible.css', plugin: 'neural_responsible' %>
+  <%= javascript_include_tag 'neural_responsible.js', plugin: 'neural_responsible' %>
+<% end %>
