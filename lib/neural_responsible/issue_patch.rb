@@ -92,19 +92,26 @@ module NeuralResponsible
           return false unless rule_set.is_a?(Hash)
           return false unless rule_set['trackers']&.include?(tracker_id.to_s)
 
-          if status_id_changed?
-            return false unless rule_set['status_from'].to_a.include?(status_id_was.to_s)
-            return false unless rule_set['status_to'].to_a.include?(status_id.to_s)
-          end
+          # Проверяем роли текущего пользователя
+          return false unless User.current
+          user_role_ids = User.current.roles_for_project(project).map(&:id).map(&:to_s)
+          return false unless (rule_set['user_roles'].to_a & user_role_ids).any?
 
-          if assigned_to
-            assignee_role_ids = assigned_to.roles_for_project(project).map(&:id).map(&:to_s)
-            return false unless (rule_set['assignee_roles'].to_a & assignee_role_ids).any?
-          end
+          if new_record?
+            # Для новой задачи проверяем только трекер и роли пользователя
+            return true
+          else
+            # Для существующей задачи проверяем изменение статуса
+            if status_id_changed?
+              return false unless rule_set['status_from'].to_a.include?(status_id_was.to_s)
+              return false unless rule_set['status_to'].to_a.include?(status_id.to_s)
+            end
 
-          if User.current
-            user_role_ids = User.current.roles_for_project(project).map(&:id).map(&:to_s)
-            return false unless (rule_set['user_roles'].to_a & user_role_ids).any?
+            # Проверяем роли назначенного пользователя
+            if assigned_to
+              assignee_role_ids = assigned_to.roles_for_project(project).map(&:id).map(&:to_s)
+              return false unless (rule_set['assignee_roles'].to_a & assignee_role_ids).any?
+            end
           end
 
           true
